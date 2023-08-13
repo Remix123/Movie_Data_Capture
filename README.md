@@ -19,7 +19,7 @@
 * [官方Twitter](https://twitter.com/mdac_official)
 
 友情链接：[CloudDrive](https://www.clouddrive2.com/)
-
+本项目基于[yoshiko2](https://github.com/yoshiko2/Movie_Data_Capture)根据自己的需要做了修改，有需要请关注原项目
 # 文档
 * [官方教程WIKI](https://github.com/yoshiko2/Movie_Data_Capture/wiki)
 * [VergilGao's Docker部署](https://github.com/VergilGao/docker-mdc)
