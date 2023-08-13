@@ -80,6 +80,41 @@ def post(url: str, data: dict=None, files=None, cookies=None, ua: str=None, retu
                 print('[-]Connect Failed! Please check your Proxy or Network!')
         raise Exception('Connect Failed')
 
+def get_html(url: str, ua: str = None, cookies=None, proxies=None, retry: int = 3, timeout: int = G_DEFAULT_TIMEOUT):
+
+    retry_count = retry
+    
+    i = 0
+    while i < retry_count:
+        try:
+            headers = {"User-Agent": ua or G_USER_AGENT}
+            getweb = requests.get(str(url), headers=headers, timeout=timeout, proxies=proxies, cookies=cookies)
+            getweb.encoding = 'utf-8'
+            return getweb.text
+        except Exception as error_info:
+            i += 1
+            print('Error in get_html :' + str(error_info))
+            print('[-]Connect retry ' + str(i) + '/' + str(retry_count))
+    print('[-]Connect Failed! Please check your Proxy or Network!')
+    return 'ProxyError'
+
+
+def post_html(url: str, query: dict, ua: str = None, proxies=None, retry: int = 3, timeout: int = G_DEFAULT_TIMEOUT):
+   
+    retry_count = retry
+
+    for i in range(retry_count):
+        try:
+            headers = {"User-Agent": ua or G_USER_AGENT}
+            result = requests.post(url, data=query, proxies=proxies, headers=headers, timeout=timeout)
+            result.encoding = 'utf-8'
+            result = result.text
+            return result
+        except Exception as error_info:
+            print('Error in post_html :' + str(error_info))
+            print("[-]Connect retry {}/{}".format(i + 1, retry_count))
+    print("[-]Connect Failed! Please check your Proxy or Network!")
+    return 'ProxyError'
 
 class TimeoutHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):

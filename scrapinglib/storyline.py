@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-此部分暂未修改
+增加dmm,jav321,javbus,mgstage
 
 """
 
@@ -12,13 +12,14 @@ import secrets
 import builtins
 import config
 
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlencode
+from lxml import etree
 from lxml.html import fromstring
 from multiprocessing.dummy import Pool as ThreadPool
 
 from .airav import Airav
 from .xcity import Xcity
-from .httprequest import get_html_by_form, get_html_by_scraper, request_session
+from .httprequest import get_html_by_form, get_html_by_scraper, request_session, post_html, get_html
 
 # 舍弃 Amazon 源
 G_registered_storyline_site = {"airavwiki", "airav", "avno1", "xcity", "58avgo"}
@@ -90,7 +91,7 @@ def getStoryline_mp(args):
     storyline = None
     if not isinstance(site, str):
         return storyline
-    elif site == "airavwiki":
+    elif site == "airavwiki": 
         storyline = getStoryline_airavwiki(number, debug, proxies, verify)
     elif site == "airav":
         storyline = getStoryline_airav(number, debug, proxies, verify)
@@ -100,6 +101,14 @@ def getStoryline_mp(args):
         storyline = getStoryline_xcity(number, debug, proxies, verify)
     elif site == "58avgo":
         storyline = getStoryline_58avgo(number, debug, proxies, verify)
+    elif site == "dmm": # dmm,jav321,javbus,mgstage
+        storyline = getStoryline_dmm(number, debug, proxies, verify)
+    elif site == "jav321":
+        storyline = getStoryline_jav321(number, debug, proxies, verify)
+    elif site == "javbus":
+        storyline = getStoryline_javbus(number, debug, proxies, verify)
+    elif site == "mgstage":
+        storyline = getStoryline_mgstage(number, debug, proxies, verify)
     if not debug:
         return storyline
     if config.getInstance().debug():
@@ -270,5 +279,110 @@ def getStoryline_xcity(number, debug, proxies, verify):  #获取剧情介绍 从
     except Exception as e:
         if debug:
             print(f"[-]MP getOutline_xcity Error: {e}, number [{number}].")
+        pass
+    return ''
+
+
+def getStoryline_dmm(number, debug, proxies, verify):  #获取剧情介绍 从dmm取得
+    try:
+        # fanza allow letter + number + underscore, normalize the input here
+        # @note: I only find the usage of underscore as h_test123456789
+        fanza_search_number = number
+        if fanza_search_number.startswith("h-"):
+            fanza_search_number = fanza_search_number.replace("h-", "h_")
+
+        fanza_search_number = re.sub(r"[^0-9a-zA-Z_]", "", fanza_search_number).lower()
+        fanza_urls = [
+        "https://www.dmm.co.jp/digital/videoa/-/detail/=/cid=",
+        "https://www.dmm.co.jp/mono/dvd/-/detail/=/cid=",
+        "https://www.dmm.co.jp/digital/anime/-/detail/=/cid=",
+        "https://www.dmm.co.jp/mono/anime/-/detail/=/cid=",
+        "https://www.dmm.co.jp/digital/videoc/-/detail/=/cid=",
+        "https://www.dmm.co.jp/digital/nikkatsu/-/detail/=/cid=",
+        "https://www.dmm.co.jp/rental/-/detail/=/cid=",
+        ]
+        chosen_url = ""
+        htmlcode = ''
+        for url in fanza_urls:
+            chosen_url = url + fanza_search_number
+            final_url = "https://www.dmm.co.jp/age_check/=/declared=yes/?{}".format(
+                    urlencode({"rurl": chosen_url})
+                )
+            htmlcode = get_html(final_url)
+            # htmlcode = get_html_by_scraper(final_url, proxies=proxies, verify=verify)
+
+            if "404 Not Found" not in htmlcode:
+                break
+        if "404 Not Found" in htmlcode:
+            return json.dumps({"title": "", 'website': ''})
+        
+        html = etree.fromstring(htmlcode, etree.HTMLParser())
+        result = str(html.xpath("//div[@class='mg-b20 lh4']/text()")[0]).replace(
+            "\n", ""
+        )
+        if result == "":
+            result = str(html.xpath("//div[@class='mg-b20 lh4']//p/text()")[0]).replace(
+                "\n", ""
+            )
+        return result
+    except Exception as e:
+        if debug:
+            print(f"[-]MP getOutline_dmm Error: {e}, number [{number}].")
+        pass
+    return ''
+
+def getStoryline_jav321(number, debug, proxies, verify):  #获取剧情介绍 从jav321取得
+    try:
+        result_url = "https://www.jav321.com/search"
+        response = post_html(result_url, query={"sn": number})
+        if str(response) == 'ProxyError':
+            raise TimeoutError
+        if '未找到您要找的AV' in response:
+            raise Exception('Movie Data not found in jav321!')
+        detail_page = etree.fromstring(response, etree.HTMLParser())
+        return str(detail_page.xpath('/html/body/div[2]/div[1]/div[1]/div[2]/div[3]/div/text()')).strip(" ['']")
+    except Exception as e:
+        if debug:
+            print(f"[-]MP getOutline_jav321 Error: {e}, number [{number}].")
+        pass
+    return ''
+
+def getStoryline_javbus(number, debug, proxies, verify):  #获取剧情介绍 从javbus取得
+    outline = ''    
+    try:
+        response = post_html("https://www.jav321.com/search", query={"sn": number})
+        detail_page = etree.fromstring(response, etree.HTMLParser())
+        outline = str(detail_page.xpath('/html/body/div[2]/div[1]/div[1]/div[2]/div[3]/div/text()')).strip(" ['']")
+        
+        if outline == '':
+            dmm_htmlcode = get_html(
+                "https://www.dmm.co.jp/search/=/searchstr=" + number.replace('-', '') + "/sort=ranking/")
+            if 'に一致する商品は見つかりませんでした' not in dmm_htmlcode:
+                dmm_page = etree.fromstring(dmm_htmlcode, etree.HTMLParser())
+                url_detail = str(dmm_page.xpath('//*[@id="list"]/li[1]/div/p[2]/a/@href')).split(',', 1)[0].strip(
+                    " ['']")
+                if url_detail != '':
+                    dmm_detail = get_html(url_detail)
+                    html = etree.fromstring(dmm_detail, etree.HTMLParser())
+                    outline = str(html.xpath('//*[@class="mg-t0 mg-b20"]/text()')).strip(" ['']").replace('\\n','').replace('\n', '')
+    except Exception as e:
+        print('Error in javbus.getOutlineScore : ' + str(e))
+    return outline
+
+def getStoryline_mgstage(number, debug, proxies, verify):  #获取剧情介绍 从mgstage取得
+    try:
+        number = number.upper()
+        url = 'https://www.mgstage.com/product/product_detail/' + str(number) + '/'
+
+        htmlcode = str(get_html(url, cookies={'adc': '1'}))
+        htmlcode = htmlcode.replace('ahref', 'a href')  # 针对a标签、属性中间未分开
+        if str(htmlcode) == 'ProxyError':
+            raise TimeoutError
+        html = etree.fromstring(htmlcode, etree.HTMLParser())
+        result = str(html.xpath('//*[@id="introduction"]/dd/p[1]/text()')).strip(" ['']")
+        return result.replace('\n', '').strip(',')
+    except Exception as e:
+        if debug:
+            print(f"[-]MP getOutline_mgstage Error: {e}, number [{number}].")
         pass
     return ''
