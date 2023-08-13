@@ -22,7 +22,7 @@ from .xcity import Xcity
 from .httprequest import get_html_by_form, get_html_by_scraper, request_session, post_html, get_html
 
 # 舍弃 Amazon 源
-G_registered_storyline_site = {"airavwiki", "airav", "avno1", "xcity", "58avgo"}
+G_registered_storyline_site = {"airavwiki", "airav", "avno1", "xcity", "58avgo", "dmm", "jav321", "javbus", "mgstage"}
 
 G_mode_txt = ('顺序执行','线程池')
 def is_japanese(raw: str) -> bool:
