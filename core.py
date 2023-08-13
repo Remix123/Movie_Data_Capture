@@ -308,8 +308,8 @@ def image_download(cover, fanart_path, thumb_path, path, filepath, json_headers=
     if file_not_exist_or_empty(full_filepath):
         return
     print('[+]Image Downloaded!', Path(full_filepath).name)
-    if not config.getInstance().jellyfin():
-        shutil.copyfile(full_filepath, os.path.join(path, fanart_path))
+    # if not config.getInstance().jellyfin():
+    shutil.copyfile(full_filepath, os.path.join(path, fanart_path))
 
 
 def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, filepath, tag, actor_list, liuchu,
@@ -372,8 +372,8 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
             print("  <director>" + director + "</director>", file=code)
             print("  <poster>" + poster_path + "</poster>", file=code)
             print("  <thumb>" + thumb_path + "</thumb>", file=code)
-            if not config.getInstance().jellyfin():  # jellyfin 不需要保存fanart
-                print("  <fanart>" + fanart_path + "</fanart>", file=code)
+            # if not config.getInstance().jellyfin():  # jellyfin 不需要保存fanart
+            print("  <fanart>" + fanart_path + "</fanart>", file=code)
             try:
                 for key in actor_list:
                     print("  <actor>", file=code)
@@ -389,28 +389,28 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
             print("  <label>" + label + "</label>", file=code)
 
             jellyfin = config.getInstance().jellyfin()
-            if not jellyfin:
-                if config.getInstance().actor_only_tag():
-                    for key in actor_list:
-                        try:
-                            print("  <tag>" + key + "</tag>", file=code)
-                        except:
-                            pass
-                else:
-                    if cn_sub:
-                        print("  <tag>中文字幕</tag>", file=code)
-                    if liuchu:
-                        print("  <tag>流出</tag>", file=code)
-                    if uncensored:
-                        print("  <tag>无码</tag>", file=code)
-                    if hack:
-                        print("  <tag>破解</tag>", file=code)
-                    if _4k:
-                        print("  <tag>4k</tag>", file=code)
-                    if iso:
-                        print("  <tag>原盘</tag>", file=code)
-                    for i in tag:
-                        print("  <tag>" + i + "</tag>", file=code)
+            # if not jellyfin:
+            if config.getInstance().actor_only_tag():
+                for key in actor_list:
+                    try:
+                        print("  <tag>" + key + "</tag>", file=code)
+                    except:
+                        pass
+            else:
+                if cn_sub:
+                    print("  <tag>中文字幕</tag>", file=code)
+                if liuchu:
+                    print("  <tag>流出</tag>", file=code)
+                if uncensored:
+                    print("  <tag>无码</tag>", file=code)
+                if hack:
+                    print("  <tag>破解</tag>", file=code)
+                if _4k:
+                    print("  <tag>4k</tag>", file=code)
+                if iso:
+                    print("  <tag>原盘</tag>", file=code)
+                for i in tag:
+                    print("  <tag>" + i + "</tag>", file=code)
             if cn_sub:
                 print("  <genre>中文字幕</genre>", file=code)
             if liuchu:
@@ -515,7 +515,7 @@ def add_mark(poster_path, thumb_path, cn_sub, leak, uncensored, hack, _4k, iso) 
 
 
 def add_mark_thread(pic_path, cn_sub, leak, uncensored, hack, _4k, iso):
-    size = 9
+    size = 6
     img_pic = Image.open(pic_path)
     # 获取自定义位置，取余配合pos达到顺时针添加的效果
     # 左上 0, 右上 1, 右下 2， 左下 3
