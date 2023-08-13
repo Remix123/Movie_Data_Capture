@@ -515,7 +515,7 @@ def add_mark(poster_path, thumb_path, cn_sub, leak, uncensored, hack, _4k, iso) 
 
 
 def add_mark_thread(pic_path, cn_sub, leak, uncensored, hack, _4k, iso):
-    size = 3
+    size = 9
     img_pic = Image.open(pic_path)
     # 获取自定义位置，取余配合pos达到顺时针添加的效果
     # 左上 0, 右上 1, 右下 2， 左下 3
