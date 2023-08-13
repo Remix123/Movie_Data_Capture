@@ -340,7 +340,7 @@ def getStoryline_jav321(number, debug, proxies, verify):  #获取剧情介绍 �
         if '未找到您要找的AV' in response:
             raise Exception('Movie Data not found in jav321!')
         detail_page = etree.fromstring(response, etree.HTMLParser())
-        return str(detail_page.xpath('/html/body/div[2]/div[1]/div[1]/div[2]/div[3]/div/text()')).strip(" ['']")
+        return str(detail_page.xpath('/html/body/div[2]/div[1]/div[1]/div[2]/div[3]/div/text()')).strip(" ['']").replace('\\n','').replace('\n', '')
     except Exception as e:
         if debug:
             print(f"[-]MP getOutline_jav321 Error: {e}, number [{number}].")
