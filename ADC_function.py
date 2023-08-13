@@ -2,6 +2,7 @@
 import os.path
 import os
 import re
+import string
 import uuid
 import json
 import time
@@ -326,7 +327,7 @@ def translate(
         result = get_html(url=url, return_type="object")
         if not result.ok:
             print('[-]Google-free translate web API calling failed.')
-            return ''
+            return src
 
         translate_list = [i["trans"] for i in result.json()["sentences"]]
         trans_result = trans_result.join(translate_list)
@@ -355,7 +356,8 @@ def translate(
         raise ValueError("Non-existent translation engine")
 
     time.sleep(delay)
-    return trans_result
+    puncres =  trans_result.translate(str.maketrans('', '', string.punctuation))
+    return puncres
 
 
 def load_cookies(cookie_json_filename: str) -> typing.Tuple[typing.Optional[dict], typing.Optional[str]]:
