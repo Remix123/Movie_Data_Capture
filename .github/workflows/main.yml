@@ -73,6 +73,7 @@ jobs:
             --add-data "scrapinglib;scrapinglib" `
             --add-data "config.ini;." `
 
+
       - name: Copy config.ini
         run: |
           cp config.ini dist/
